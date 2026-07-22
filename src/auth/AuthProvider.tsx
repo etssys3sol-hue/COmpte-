@@ -5,7 +5,8 @@ import { authService } from "../services/auth.service";
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (identifier: string) => Promise<AuthUser>;
+  loginEstablishment: (identifier: string) => Promise<AuthUser>;
+  loginAdmin: (email: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
 
@@ -28,8 +29,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = async (identifier: string) => {
-    const session = await authService.login(identifier);
+  const loginEstablishment = async (identifier: string) => {
+    const session = await authService.loginEstablishment(identifier);
+    setUser(session);
+    return session;
+  };
+
+  const loginAdmin = async (email: string, password: string) => {
+    const session = await authService.loginAdmin(email, password);
     setUser(session);
     return session;
   };
@@ -40,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, loginEstablishment, loginAdmin, logout }}>
       {children}
     </AuthContext.Provider>
   );
