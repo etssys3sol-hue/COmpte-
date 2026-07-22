@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Collecte Enseignants DDESTFP",
+  "description": "Interface web de collecte et de gestion des données des enseignants DDESTFP",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
