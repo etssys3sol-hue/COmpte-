@@ -124,7 +124,7 @@ export function LoginPage() {
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
-                      placeholder="Ex: LTP_LOKOSSA"
+                      placeholder="Ex: EST1234"
                       disabled={isSubmitting}
                     />
                   </div>

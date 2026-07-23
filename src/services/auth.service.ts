@@ -11,67 +11,76 @@ const ADMIN_USER: AuthUser = {
   displayName: "Administrateur Général",
 };
 
+export async function loginEstablishment(
+  rawIdentifier: string,
+): Promise<AuthUser> {
+  const identifier = rawIdentifier.trim().toUpperCase();
+
+  if (!/^[A-Z0-9]{7}$/.test(identifier)) {
+    throw new Error("L’identifiant doit contenir exactement 7 caractères.");
+  }
+
+  const { data, error } = await supabase.functions.invoke("establishment-login", {
+    body: {
+      identifier,
+    },
+  });
+
+  if (error) {
+    console.error("Erreur Edge Function :", error);
+    throw new Error("La connexion n’a pas pu être établie.");
+  }
+
+  if (!data?.access_token || !data?.refresh_token) {
+    throw new Error(data?.error || "Identifiant incorrect ou non reconnu.");
+  }
+
+  const { error: sessionError } = await supabase.auth.setSession({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+  });
+
+  if (sessionError) {
+    console.error("Erreur setSession :", sessionError);
+    throw new Error("Impossible d’ouvrir la session sécurisée.");
+  }
+
+  const { data: contextRows, error: contextError } = await supabase.rpc("get_current_user_context");
+
+  if (contextError) {
+    await supabase.auth.signOut();
+    console.error("Erreur contexte utilisateur :", contextError);
+    throw new Error("Impossible de vérifier les autorisations.");
+  }
+
+  const context = Array.isArray(contextRows) ? contextRows[0] : contextRows;
+
+  if (
+    !context ||
+    context.role !== "establishment" ||
+    context.access_status !== "active" ||
+    !context.establishment_id
+  ) {
+    await supabase.auth.signOut();
+    throw new Error("Cet établissement n’est pas autorisé.");
+  }
+
+  return {
+    id: context.user_id,
+    role: "establishment" as const,
+    accessStatus: context.access_status,
+    establishmentId: context.establishment_id,
+    establishmentCode: context.establishment_code,
+    establishmentName: context.establishment_name,
+    displayName: context.display_name || context.establishment_name,
+  };
+}
+
 class AuthService {
   private readonly SESSION_KEY = "ddestfp_auth_session";
 
   async loginEstablishment(rawIdentifier: string): Promise<AuthUser> {
-    const identifier = rawIdentifier.trim().toUpperCase();
-
-    if (!identifier) {
-      throw new Error("L’identifiant de connexion est obligatoire.");
-    }
-
-    const { data, error } = await supabase.functions.invoke("establishment-login", {
-      body: { identifier },
-    });
-
-    if (error || !data?.access_token || !data?.refresh_token) {
-      throw new Error("Identifiant incorrect ou non reconnu.");
-    }
-
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-    });
-
-    if (sessionError) {
-      throw new Error("Impossible d’ouvrir la session de l’établissement.");
-    }
-
-    const { data: contextRows, error: contextError } = await supabase.rpc("get_current_user_context");
-
-    const context = contextRows?.[0];
-
-    if (
-      contextError ||
-      !context ||
-      context.role !== "establishment" ||
-      context.access_status !== "active" ||
-      !context.establishment_id
-    ) {
-      await supabase.auth.signOut();
-      
-      if (context && context.access_status === "suspended") {
-        throw new Error("L’accès de cet établissement est actuellement suspendu. Contactez l’administrateur.");
-      }
-      
-      throw new Error("Cet établissement n’est pas autorisé à accéder à la plateforme.");
-    }
-
-    const user: AuthUser = {
-      id: context.user_id,
-      role: "establishment",
-      establishmentId: context.establishment_id,
-      establishmentCode: context.establishment_code,
-      establishmentName: context.establishment_name,
-      displayName: context.display_name || context.establishment_name,
-    };
-    
-    // We only use the local session fallback for admin, but we keep this aligned if needed 
-    // Wait, the prompt said: "Le frontend doit seulement conserver la session sécurisée retournée par Supabase."
-    // So we don't save the establishment user to local storage.
-    
-    return user;
+    return loginEstablishment(rawIdentifier);
   }
 
   async loginAdmin(email: string, password: string): Promise<AuthUser> {
@@ -98,12 +107,13 @@ class AuthService {
     if (session) {
       try {
         const { data: contextRows } = await supabase.rpc("get_current_user_context");
-        const context = contextRows?.[0];
+        const context = Array.isArray(contextRows) ? contextRows[0] : contextRows;
         
         if (context && context.role === "establishment" && context.access_status === "active") {
           return {
             id: context.user_id,
             role: "establishment",
+            accessStatus: context.access_status,
             establishmentId: context.establishment_id,
             establishmentCode: context.establishment_code,
             establishmentName: context.establishment_name,
@@ -138,3 +148,4 @@ class AuthService {
 }
 
 export const authService = new AuthService();
+

@@ -5,4 +5,5 @@ export interface AuthUser {
   establishmentCode: string | null;
   establishmentName: string | null;
   displayName: string;
+  accessStatus?: string;
 }
