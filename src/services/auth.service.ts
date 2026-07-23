@@ -153,6 +153,7 @@ export async function loginEstablishment(
   }
 
   return {
+    id: context.user_id,
     userId: context.user_id,
     role: "establishment",
     establishmentId:
@@ -187,7 +188,7 @@ class AuthService {
   }
 
   async logout(): Promise<void> {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     localStorage.removeItem(this.SESSION_KEY);
   }
 
@@ -200,18 +201,25 @@ class AuthService {
         const { data: contextRows } = await supabase.rpc("get_current_user_context");
         const context = Array.isArray(contextRows) ? contextRows[0] : contextRows;
         
-        if (context && context.role === "establishment" && context.access_status === "active") {
+        if (
+          context &&
+          context.role === "establishment" &&
+          context.access_status === "active" &&
+          context.establishment_id &&
+          context.establishment_code &&
+          context.establishment_name
+        ) {
           return {
             id: context.user_id,
+            userId: context.user_id,
             role: "establishment",
-            accessStatus: context.access_status,
             establishmentId: context.establishment_id,
             establishmentCode: context.establishment_code,
             establishmentName: context.establishment_name,
             displayName: context.display_name || context.establishment_name,
           };
         } else {
-          await supabase.auth.signOut();
+          await supabase.auth.signOut({ scope: "local" });
         }
       } catch (e) {
         console.error("Failed to restore supabase session context", e);
