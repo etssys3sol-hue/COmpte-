@@ -124,14 +124,14 @@ export function LoginPage() {
                       spellCheck={false}
                       disabled={isSubmitting}
                       required
-                      onChange={(event) => {
-                        const value = event.target.value
-                          .toUpperCase()
-                          .replace(/[^A-Z0-9]/g, "")
-                          .slice(0, 7);
-
-                        setIdentifier(value);
-                      }}
+                      onChange={(event) =>
+                        setIdentifier(
+                          event.target.value
+                            .toUpperCase()
+                            .replace(/[^A-Z0-9]/g, "")
+                            .slice(0, 7),
+                        )
+                      }
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-mono tracking-wider"
                       placeholder="Ex: EST1234"
                     />
@@ -146,7 +146,7 @@ export function LoginPage() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Vérification…
+                      Connexion en cours…
                     </>
                   ) : (
                     "Accéder à mon espace"

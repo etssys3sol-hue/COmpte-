@@ -80,15 +80,20 @@ export async function loginEstablishment(
     );
   }
 
-  const { error: sessionError } =
-    await supabase.auth.setSession({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-    });
+  const {
+    data: sessionData,
+    error: sessionError,
+  } = await supabase.auth.setSession({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+  });
 
-  if (sessionError) {
+  if (
+    sessionError ||
+    !sessionData.session
+  ) {
     throw new Error(
-      "Impossible d’ouvrir la session de l’établissement.",
+      "Impossible d’ouvrir la session sécurisée.",
     );
   }
 
@@ -100,14 +105,18 @@ export async function loginEstablishment(
   );
 
   if (contextError) {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({
+      scope: "local",
+    });
 
     throw new Error(
       "Impossible de vérifier l’établissement connecté.",
     );
   }
 
-  const context = Array.isArray(contextResult)
+  const context = Array.isArray(
+    contextResult,
+  )
     ? contextResult[0]
     : contextResult;
 
@@ -117,7 +126,9 @@ export async function loginEstablishment(
     context.access_status !== "active" ||
     !context.establishment_id
   ) {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({
+      scope: "local",
+    });
 
     throw new Error(
       "Cet établissement n’est pas autorisé.",
