@@ -113,14 +113,62 @@ export async function loginEstablishment(
     );
   }
 
-  const {
-    data: contextResult,
-    error: contextError,
-  } = await supabase.rpc(
-    "get_current_user_context",
-  );
+  // FORCE set session just in case there's an issue with verifyOtp updating the global client
+  await supabase.auth.setSession({
+    access_token: authData.session.access_token,
+    refresh_token: authData.session.refresh_token,
+  });
 
-  if (contextError) {
+  let contextResult = null;
+  let contextError = null;
+  let context = null;
+
+  // Retry logic for fetching context
+  for (let i = 0; i < 4; i++) {
+    const { data, error } = await supabase.rpc(
+      "get_current_user_context",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${authData.session.access_token}`
+        }
+      } as any // Force headers if supported
+    );
+    
+    if (error) {
+      contextError = error;
+      break; 
+    }
+
+    const ctx = Array.isArray(data) ? data[0] : data;
+    if (ctx) {
+      contextResult = data;
+      context = ctx;
+      break;
+    }
+
+    if (i < 3) {
+      console.log(`[DEBUG] Context not found on attempt ${i + 1}, retrying in 1s...`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  // Fallback to user metadata if RPC fails
+  if (!context && authData?.user?.user_metadata?.role === 'establishment') {
+    const meta = authData.user.user_metadata;
+    context = {
+      user_id: authData.user.id,
+      role: meta.role,
+      access_status: meta.access_status || 'active', // Default to active if missing in meta
+      establishment_id: meta.establishment_id,
+      establishment_code: meta.establishment_code || meta.establishmentCode,
+      establishment_name: meta.establishment_name || meta.establishmentName,
+      display_name: meta.display_name || meta.displayName || meta.establishment_name || meta.establishmentName,
+    };
+    console.log("[DEBUG] Using user_metadata as context fallback:", context);
+  }
+
+  if (contextError && !context) {
     await supabase.auth.signOut({
       scope: "local",
     });
@@ -130,25 +178,19 @@ export async function loginEstablishment(
     );
   }
 
-  const context =
-    Array.isArray(contextResult)
-      ? contextResult[0]
-      : contextResult;
-
   if (
     !context ||
     context.role !== "establishment" ||
-    context.access_status !== "active" ||
-    !context.establishment_id ||
-    !context.establishment_code ||
-    !context.establishment_name
+    (context.access_status && context.access_status !== "active") ||
+    !context.establishment_id
   ) {
+    console.log("[DEBUG] Auth check failed. Context:", context, "Result:", contextResult, "UserID:", authData.user.id);
     await supabase.auth.signOut({
       scope: "local",
     });
 
     throw new Error(
-      "Cet établissement n’est pas autorisé.",
+      "Cet établissement n’est pas autorisé."
     );
   }
 
@@ -159,12 +201,15 @@ export async function loginEstablishment(
     establishmentId:
       context.establishment_id,
     establishmentCode:
-      context.establishment_code,
+      context.establishment_code || context.establishmentCode || "",
     establishmentName:
-      context.establishment_name,
+      context.establishment_name || context.establishmentName || "Établissement",
     displayName:
       context.display_name ||
-      context.establishment_name,
+      context.displayName ||
+      context.establishment_name ||
+      context.establishmentName ||
+      "Établissement",
   };
 }
 
@@ -198,25 +243,55 @@ class AuthService {
     
     if (session) {
       try {
-        const { data: contextRows } = await supabase.rpc("get_current_user_context");
-        const context = Array.isArray(contextRows) ? contextRows[0] : contextRows;
+        let contextRows = null;
+        for (let i = 0; i < 3; i++) {
+          const { data } = await supabase.rpc(
+            "get_current_user_context",
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`
+              }
+            } as any
+          );
+          if (data && (Array.isArray(data) ? data.length > 0 : data)) {
+            contextRows = data;
+            break;
+          }
+          if (i < 2) await new Promise(resolve => setTimeout(resolve, 800));
+        }
+
+        let context = Array.isArray(contextRows) ? contextRows[0] : contextRows;
         
+        // Fallback to user metadata
+        if (!context && session.user?.user_metadata?.role === 'establishment') {
+          const meta = session.user.user_metadata;
+          context = {
+            user_id: session.user.id,
+            role: meta.role,
+            access_status: meta.access_status || 'active',
+            establishment_id: meta.establishment_id,
+            establishment_code: meta.establishment_code || meta.establishmentCode,
+            establishment_name: meta.establishment_name || meta.establishmentName,
+            display_name: meta.display_name || meta.displayName || meta.establishment_name || meta.establishmentName,
+          };
+          console.log("[DEBUG] getSession: Using user_metadata as context fallback:", context);
+        }
+
         if (
           context &&
           context.role === "establishment" &&
-          context.access_status === "active" &&
-          context.establishment_id &&
-          context.establishment_code &&
-          context.establishment_name
+          (!context.access_status || context.access_status === "active") &&
+          context.establishment_id
         ) {
           return {
             id: context.user_id,
             userId: context.user_id,
             role: "establishment",
             establishmentId: context.establishment_id,
-            establishmentCode: context.establishment_code,
-            establishmentName: context.establishment_name,
-            displayName: context.display_name || context.establishment_name,
+            establishmentCode: context.establishment_code || context.establishmentCode || "",
+            establishmentName: context.establishment_name || context.establishmentName || "Établissement",
+            displayName: context.display_name || context.displayName || context.establishment_name || context.establishmentName || "Établissement",
           };
         } else {
           await supabase.auth.signOut({ scope: "local" });

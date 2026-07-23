@@ -1,0 +1,18 @@
+--- src/services/auth.service.ts
++++ src/services/auth.service.ts
+@@ -148,7 +148,7 @@
+     });
+ 
+     throw new Error(
+-      "Cet établissement n’est pas autorisé."
++      "Cet établissement n’est pas autorisé. " + JSON.stringify(context)
+     );
+   }
+ 
+@@ -216,7 +216,7 @@
+           };
+         } else {
++          console.log("[DEBUG] getSession Auth check failed. Context:", context);
+           await supabase.auth.signOut({ scope: "local" });
+         }
+       } catch (e) {
