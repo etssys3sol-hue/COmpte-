@@ -3,9 +3,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
 import { ProtectedRoute, AdminRoute, EstablishmentRoute } from "./auth/ProtectedRoute";
 import { Loader2 } from "lucide-react";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 // Lazy-loaded page components
 const LoginPage = lazy(() => import("./pages/LoginPage").then(m => ({ default: m.LoginPage })));
+
 const AdminLayout = lazy(() => import("./app/layouts/AdminLayout").then(m => ({ default: m.AdminLayout })));
 const EstablishmentLayout = lazy(() => import("./app/layouts/EstablishmentLayout").then(m => ({ default: m.EstablishmentLayout })));
 const AdminDashboard = lazy(() => import("./features/admin/dashboard/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
@@ -29,10 +31,12 @@ function PageLoader() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/connexion" element={<LoginPage />} />
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <AuthProvider>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/connexion" element={<LoginPage />} />
+
           
           <Route element={<ProtectedRoute />}>
             {/* Admin Routes */}
@@ -77,5 +81,6 @@ export default function App() {
         </Routes>
       </Suspense>
     </AuthProvider>
+    </ThemeProvider>
   );
 }

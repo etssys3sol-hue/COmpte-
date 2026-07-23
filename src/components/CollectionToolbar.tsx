@@ -50,9 +50,9 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
   hideViewSwitcher,
 }) => {
   return (
-    <div className="bg-slate-800 border border-slate-700/80 rounded-xl p-4 shadow-xl space-y-4">
+    <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-300 dark:border-slate-700/80 rounded-xl p-4 shadow-xl space-y-4">
       {/* Top Header Row: Establishment Selector & Main Nav Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-700/80 pb-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-300 dark:border-slate-700/80 pb-4">
         {/* Establishment Green Box Selector (Cadran vert du fichier Excel) */}
         <div className="flex items-center gap-3">
           {!hideEstablishmentSelector && (
@@ -70,7 +70,7 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
                   className="bg-transparent text-emerald-200 font-semibold text-sm focus:outline-none focus:ring-0 cursor-pointer pr-4"
                 >
                   {establishments.map((est) => (
-                    <option key={est.code} value={est.code} className="bg-slate-900 text-slate-100">
+                    <option key={est.code} value={est.code} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                       {est.label} ({est.teacherCount} profs)
                     </option>
                   ))}
@@ -80,7 +80,7 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
           )}
 
           {/* Save status badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-900/80 border border-slate-700">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700">
             {saveState === 'saving' && (
               <>
                 <RefreshCw className="w-3.5 h-3.5 text-amber-400 animate-spin" />
@@ -95,8 +95,8 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
             )}
             {saveState === 'idle' && (
               <>
-                <Save className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-400">Local non modifié</span>
+                <Save className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                <span className="text-slate-600 dark:text-slate-400">Local non modifié</span>
               </>
             )}
             {saveState === 'error' && (
@@ -110,13 +110,13 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
 
         {/* View mode switcher tabs */}
         {!hideViewSwitcher && (
-          <div className="flex items-center bg-slate-900/90 p-1 rounded-lg border border-slate-700/80 gap-1 self-start lg:self-auto">
+          <div className="flex items-center bg-white dark:bg-slate-900/90 p-1 rounded-lg border border-slate-200 dark:border-slate-300 dark:border-slate-700/80 gap-1 self-start lg:self-auto">
             <button
               onClick={() => onViewChange('grid')}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                 activeView === 'grid'
                   ? 'bg-emerald-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800'
               }`}
               title="Grand tableau de 65 colonnes"
             >
@@ -128,7 +128,7 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                 activeView === 'cards'
                   ? 'bg-emerald-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800'
               }`}
               title="Vue fiche enseignant par section"
             >
@@ -140,7 +140,7 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
                 activeView === 'referentials'
                   ? 'bg-emerald-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:bg-slate-800'
               }`}
               title="Référentiels (Enseignants, Métiers, Disciplines)"
             >
@@ -153,26 +153,26 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
 
       {/* Stats Summary Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-        <div className="bg-slate-900/60 border border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
-          <span className="text-slate-400">Total affiché:</span>
-          <span className="font-bold text-slate-100 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+        <div className="bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
+          <span className="text-slate-600 dark:text-slate-400">Total affiché:</span>
+          <span className="font-bold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700">
             {totalCount}
           </span>
         </div>
-        <div className="bg-slate-900/60 border border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
-          <span className="text-slate-400">En cours:</span>
+        <div className="bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
+          <span className="text-slate-600 dark:text-slate-400">En cours:</span>
           <span className="font-bold text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800">
             {startedCount}
           </span>
         </div>
-        <div className="bg-slate-900/60 border border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
-          <span className="text-slate-400">Complètes:</span>
+        <div className="bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
+          <span className="text-slate-600 dark:text-slate-400">Complètes:</span>
           <span className="font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
             {completedCount}
           </span>
         </div>
-        <div className="bg-slate-900/60 border border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
-          <span className="text-slate-400">Invalides / Erreurs:</span>
+        <div className="bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/60 rounded-lg p-2.5 flex items-center justify-between">
+          <span className="text-slate-600 dark:text-slate-400">Invalides / Erreurs:</span>
           <span className="font-bold text-rose-400 bg-rose-950/60 px-2 py-0.5 rounded border border-rose-800">
             {invalidCount}
           </span>
@@ -183,13 +183,13 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
       <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 pt-1">
         {/* Search input */}
         <div className="relative flex-1 min-w-[200px] w-full sm:w-auto">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-600 dark:text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Rechercher par nom et prénoms..."
-            className="w-full bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 text-xs rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 text-xs rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -198,7 +198,7 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
           <select
             value={specialtyFilter}
             onChange={(e) => onSpecialtyFilterChange(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
           >
             <option value="ALL">Tous les métiers / spécialités</option>
             {availableSpecialties.map((spec) => (
@@ -214,7 +214,7 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500"
           >
             <option value="ALL">Tous les états de complétude</option>
             <option value="not_started">Non commencé</option>
@@ -227,7 +227,7 @@ export const CollectionToolbar: React.FC<CollectionToolbarProps> = ({
         {/* Filter reset */}
         <button
           onClick={onResetFilters}
-          className="flex items-center gap-1.5 px-3 py-2 bg-slate-700/80 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition-colors border border-slate-600/80 shrink-0"
+          className="flex items-center gap-1.5 px-3 py-2 bg-slate-700/80 hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-lg transition-colors border border-slate-600/80 shrink-0"
           title="Réinitialiser tous les filtres de recherche"
         >
           <RotateCcw className="w-3.5 h-3.5" />

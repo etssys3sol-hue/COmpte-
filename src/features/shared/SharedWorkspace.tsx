@@ -200,7 +200,7 @@ export function SharedWorkspace({ forcedEstablishmentCode, viewMode }: SharedWor
 
       {viewMode === 'cards' && (
         <div className="space-y-4">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between text-xs text-slate-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-700/80 rounded-xl p-4 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300">
             <span>Sélectionnez un enseignant ci-dessous pour ouvrir sa fiche détaillée :</span>
             <span className="font-bold text-emerald-400">{filteredTeachers.length} enseignant(s)</span>
           </div>
@@ -211,19 +211,19 @@ export function SharedWorkspace({ forcedEstablishmentCode, viewMode }: SharedWor
                 <div
                   key={teacher.id}
                   onClick={() => setActiveDrawerTeacherId(teacher.id)}
-                  className="bg-slate-900 border border-slate-700/80 hover:border-emerald-500/80 rounded-xl p-4 cursor-pointer transition-all shadow hover:shadow-lg space-y-3"
+                  className="bg-white dark:bg-slate-900 border border-slate-700/80 hover:border-emerald-500/80 rounded-xl p-4 cursor-pointer transition-all shadow hover:shadow-lg space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[10px] font-mono text-slate-400">#{index + 1}</span>
-                      <h3 className="font-bold text-slate-100 text-sm leading-snug">{teacher.sourceName}</h3>
+                      <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">#{index + 1}</span>
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm leading-snug">{teacher.sourceName}</h3>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-emerald-400 border border-slate-700 shrink-0">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-emerald-400 border border-slate-700 shrink-0">
                       {rec?.specialty || 'Non défini'}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div>
                       <span>Tot. Hebdo :</span>
                       <span className="font-bold text-emerald-400 ml-1">{rec?.weeklyTotal ?? 0} h</span>

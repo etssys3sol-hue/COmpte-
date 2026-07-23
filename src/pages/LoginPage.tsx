@@ -57,28 +57,28 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-slate-950">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8 text-center space-y-4">
           <div className="bg-emerald-600 p-4 rounded-2xl shadow-lg text-white">
             <GraduationCap className="w-10 h-10" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Plateforme DDESTFP</h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Plateforme DDESTFP</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
               {loginType === "establishment" ? "Connexion à l'espace établissement" : "Connexion Administrateur"}
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-          <div className="flex border-b border-slate-800">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+          <div className="flex border-b border-slate-200 dark:border-slate-800">
             <button
               onClick={() => { setLoginType("establishment"); setError(""); }}
               className={`flex-1 py-3 text-sm font-medium transition-colors ${
                 loginType === "establishment"
                   ? "bg-slate-800 text-emerald-400 border-b-2 border-emerald-500"
-                  : "text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
               }`}
             >
               Établissement
@@ -88,7 +88,7 @@ export function LoginPage() {
               className={`flex-1 py-3 text-sm font-medium transition-colors ${
                 loginType === "admin"
                   ? "bg-slate-800 text-emerald-400 border-b-2 border-emerald-500"
-                  : "text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-300 hover:bg-slate-800/50"
               }`}
             >
               Administrateur
@@ -132,7 +132,7 @@ export function LoginPage() {
                             .slice(0, 7),
                         )
                       }
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-mono tracking-wider"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2.5 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-mono tracking-wider"
                       placeholder="Ex: EST1234"
                     />
                   </div>
@@ -165,7 +165,7 @@ export function LoginPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2.5 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
                       placeholder="admin@ddestfp.bj"
                       disabled={isSubmitting}
                     />
@@ -181,7 +181,7 @@ export function LoginPage() {
                         type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-4 pr-12 py-2.5 text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg pl-4 pr-12 py-2.5 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
                         placeholder="••••••••"
                         disabled={isSubmitting}
                       />
@@ -216,7 +216,7 @@ export function LoginPage() {
           </div>
           
           {loginType === "establishment" && (
-            <div className="bg-slate-950/50 p-4 border-t border-slate-800 text-center text-xs text-slate-500">
+            <div className="bg-slate-50 dark:bg-slate-950/50 p-4 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
               <p>Les identifiants sont attribués par l'administrateur de la DDESTFP.</p>
               <p className="mt-1">En cas de problème, veuillez contacter la direction.</p>
             </div>
