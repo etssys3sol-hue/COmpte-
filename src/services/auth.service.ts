@@ -11,68 +11,143 @@ const ADMIN_USER: AuthUser = {
   displayName: "Administrateur Général",
 };
 
+export interface EstablishmentSession extends AuthUser {
+  userId: string;
+  role: "establishment";
+  establishmentId: string;
+  establishmentCode: string;
+  establishmentName: string;
+  displayName: string;
+}
+
 export async function loginEstablishment(
   rawIdentifier: string,
-): Promise<AuthUser> {
-  const identifier = rawIdentifier.trim().toUpperCase();
+): Promise<EstablishmentSession> {
+  const identifier = rawIdentifier
+    .trim()
+    .toUpperCase();
 
   if (!/^[A-Z0-9]{7}$/.test(identifier)) {
-    throw new Error("L’identifiant doit contenir exactement 7 caractères.");
+    throw new Error(
+      "L’identifiant doit contenir exactement 7 caractères.",
+    );
   }
 
-  const { data, error } = await supabase.functions.invoke("establishment-login", {
-    body: {
-      identifier,
-    },
-  });
+  const { data, error } =
+    await supabase.functions.invoke(
+      "establishment-login",
+      {
+        body: {
+          identifier,
+        },
+      },
+    );
 
   if (error) {
-    console.error("Erreur Edge Function :", error);
-    throw new Error("La connexion n’a pas pu être établie.");
+    let message =
+      "La connexion n’a pas pu être établie.";
+
+    const response = (
+      error as {
+        context?: unknown;
+      }
+    ).context;
+
+    if (response instanceof Response) {
+      try {
+        const payload =
+          await response.clone().json();
+
+        if (
+          typeof payload?.error === "string"
+        ) {
+          message = payload.error;
+        }
+      } catch {
+        // Conserver le message par défaut.
+      }
+    }
+
+    console.error(
+      "Erreur establishment-login :",
+      error,
+    );
+
+    throw new Error(message);
   }
 
-  if (!data?.access_token || !data?.refresh_token) {
-    throw new Error(data?.error || "Identifiant incorrect ou non reconnu.");
+  if (
+    !data?.access_token ||
+    !data?.refresh_token
+  ) {
+    throw new Error(
+      data?.error ||
+        "Aucune session n’a été retournée.",
+    );
   }
 
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
-  });
+  const { error: sessionError } =
+    await supabase.auth.setSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+    });
 
   if (sessionError) {
-    console.error("Erreur setSession :", sessionError);
-    throw new Error("Impossible d’ouvrir la session sécurisée.");
+    throw new Error(
+      "Impossible d’ouvrir la session sécurisée.",
+    );
   }
 
-  const { data: contextRows, error: contextError } = await supabase.rpc("get_current_user_context");
+  const {
+    data: contextResult,
+    error: contextError,
+  } = await supabase.rpc(
+    "get_current_user_context",
+  );
 
   if (contextError) {
     await supabase.auth.signOut();
-    console.error("Erreur contexte utilisateur :", contextError);
-    throw new Error("Impossible de vérifier les autorisations.");
+
+    throw new Error(
+      "Impossible de vérifier les autorisations de l’établissement.",
+    );
   }
 
-  const context = Array.isArray(contextRows) ? contextRows[0] : contextRows;
+  const context = Array.isArray(
+    contextResult,
+  )
+    ? contextResult[0]
+    : contextResult;
 
   if (
     !context ||
     context.role !== "establishment" ||
     context.access_status !== "active" ||
-    !context.establishment_id
+    !context.establishment_id ||
+    !context.establishment_code ||
+    !context.establishment_name
   ) {
     await supabase.auth.signOut();
-    throw new Error("Cet établissement n’est pas autorisé.");
+
+    throw new Error(
+      "Cet établissement n’est pas autorisé à accéder à la plateforme.",
+    );
   }
 
   return {
     id: context.user_id,
-    role: "establishment" as const,
+    userId: context.user_id,
+    role: "establishment",
+    establishmentId:
+      context.establishment_id,
+    establishmentCode:
+      context.establishment_code,
+    establishmentName:
+      context.establishment_name,
+    displayName:
+      context.display_name ||
+      context.establishment_name,
     accessStatus: context.access_status,
-    establishmentId: context.establishment_id,
-    establishmentCode: context.establishment_code,
-    establishmentName: context.establishment_name,
-    displayName: context.display_name || context.establishment_name,
   };
 }
 

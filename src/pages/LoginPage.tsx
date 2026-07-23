@@ -17,25 +17,20 @@ export function LoginPage() {
 
   const handleEstablishmentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    
-    const normalizedIdentifier = identifier.trim().toUpperCase();
-    
-    if (!normalizedIdentifier) {
-      setError("L’identifiant de connexion est obligatoire.");
-      return;
-    }
-    
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
+    setError("");
+
     try {
       await loginEstablishment(identifier);
       navigate("/espace/tableau-de-bord", { replace: true });
     } catch (err: any) {
-      if (err.message === "Failed to fetch" || err.name === "TypeError") {
-        setError("La connexion n’a pas pu être établie. Veuillez réessayer.");
-      } else {
-        setError(err.message || "Identifiant incorrect ou non reconnu.");
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "La connexion a échoué."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -120,25 +115,38 @@ export function LoginPage() {
                     </p>
                     <input
                       id="identifier"
+                      name="identifier"
                       type="text"
                       value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
-                      placeholder="Ex: EST1234"
+                      minLength={7}
+                      maxLength={7}
+                      autoComplete="off"
+                      spellCheck={false}
                       disabled={isSubmitting}
+                      required
+                      onChange={(event) => {
+                        const value = event.target.value
+                          .toUpperCase()
+                          .replace(/[^A-Z0-9]/g, "")
+                          .slice(0, 7);
+
+                        setIdentifier(value);
+                      }}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 font-mono tracking-wider"
+                      placeholder="Ex: EST1234"
                     />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || identifier.length !== 7}
                   className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Vérification de votre identifiant…
+                      Vérification…
                     </>
                   ) : (
                     "Accéder à mon espace"

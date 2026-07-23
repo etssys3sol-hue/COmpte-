@@ -1,5 +1,6 @@
 export interface AuthUser {
   id: string;
+  userId?: string;
   role: "admin" | "establishment";
   establishmentId: string | null;
   establishmentCode: string | null;
