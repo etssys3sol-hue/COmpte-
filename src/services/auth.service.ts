@@ -33,15 +33,17 @@ export async function loginEstablishment(
     );
   }
 
-  const { data, error } =
-    await supabase.functions.invoke(
-      "establishment-login",
-      {
-        body: {
-          identifier,
-        },
+  const {
+    data,
+    error,
+  } = await supabase.functions.invoke(
+    "establishment-login",
+    {
+      body: {
+        identifier,
       },
-    );
+    },
+  );
 
   if (error) {
     let message =
@@ -71,27 +73,41 @@ export async function loginEstablishment(
     throw new Error(message);
   }
 
+  const tokenHash = data?.token_hash;
+
   if (
-    !data?.access_token ||
-    !data?.refresh_token
+    typeof tokenHash !== "string" ||
+    !tokenHash
   ) {
     throw new Error(
-      "La session de l’établissement n’a pas été retournée.",
+      "Le serveur n’a pas retourné de jeton de connexion.",
     );
   }
 
+  /*
+   * Création directe de la session dans
+   * le navigateur.
+   *
+   * Ne plus utiliser setSession().
+   */
   const {
-    data: sessionData,
-    error: sessionError,
-  } = await supabase.auth.setSession({
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
+    data: authData,
+    error: authError,
+  } = await supabase.auth.verifyOtp({
+    token_hash: tokenHash,
+    type: "email",
   });
 
   if (
-    sessionError ||
-    !sessionData.session
+    authError ||
+    !authData.session ||
+    !authData.user
   ) {
+    console.error(
+      "Erreur verifyOtp établissement :",
+      authError,
+    );
+
     throw new Error(
       "Impossible d’ouvrir la session sécurisée.",
     );
@@ -114,17 +130,18 @@ export async function loginEstablishment(
     );
   }
 
-  const context = Array.isArray(
-    contextResult,
-  )
-    ? contextResult[0]
-    : contextResult;
+  const context =
+    Array.isArray(contextResult)
+      ? contextResult[0]
+      : contextResult;
 
   if (
     !context ||
     context.role !== "establishment" ||
     context.access_status !== "active" ||
-    !context.establishment_id
+    !context.establishment_id ||
+    !context.establishment_code ||
+    !context.establishment_name
   ) {
     await supabase.auth.signOut({
       scope: "local",
@@ -137,7 +154,7 @@ export async function loginEstablishment(
 
   return {
     userId: context.user_id,
-    role: "establishment" as const,
+    role: "establishment",
     establishmentId:
       context.establishment_id,
     establishmentCode:
