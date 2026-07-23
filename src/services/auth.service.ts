@@ -45,7 +45,7 @@ export async function loginEstablishment(
 
   if (error) {
     let message =
-      "La connexion n’a pas pu être établie.";
+      "Identifiant incorrect ou non reconnu.";
 
     const response = (
       error as {
@@ -68,11 +68,6 @@ export async function loginEstablishment(
       }
     }
 
-    console.error(
-      "Erreur establishment-login :",
-      error,
-    );
-
     throw new Error(message);
   }
 
@@ -81,8 +76,7 @@ export async function loginEstablishment(
     !data?.refresh_token
   ) {
     throw new Error(
-      data?.error ||
-        "Aucune session n’a été retournée.",
+      "La session de l’établissement n’a pas été retournée.",
     );
   }
 
@@ -94,7 +88,7 @@ export async function loginEstablishment(
 
   if (sessionError) {
     throw new Error(
-      "Impossible d’ouvrir la session sécurisée.",
+      "Impossible d’ouvrir la session de l’établissement.",
     );
   }
 
@@ -109,13 +103,11 @@ export async function loginEstablishment(
     await supabase.auth.signOut();
 
     throw new Error(
-      "Impossible de vérifier les autorisations de l’établissement.",
+      "Impossible de vérifier l’établissement connecté.",
     );
   }
 
-  const context = Array.isArray(
-    contextResult,
-  )
+  const context = Array.isArray(contextResult)
     ? contextResult[0]
     : contextResult;
 
@@ -123,21 +115,18 @@ export async function loginEstablishment(
     !context ||
     context.role !== "establishment" ||
     context.access_status !== "active" ||
-    !context.establishment_id ||
-    !context.establishment_code ||
-    !context.establishment_name
+    !context.establishment_id
   ) {
     await supabase.auth.signOut();
 
     throw new Error(
-      "Cet établissement n’est pas autorisé à accéder à la plateforme.",
+      "Cet établissement n’est pas autorisé.",
     );
   }
 
   return {
-    id: context.user_id,
     userId: context.user_id,
-    role: "establishment",
+    role: "establishment" as const,
     establishmentId:
       context.establishment_id,
     establishmentCode:
@@ -147,7 +136,6 @@ export async function loginEstablishment(
     displayName:
       context.display_name ||
       context.establishment_name,
-    accessStatus: context.access_status,
   };
 }
 
